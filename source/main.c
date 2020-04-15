@@ -43,8 +43,8 @@
 #include "Uart0poll.h"
 #include "led.h"
 #include "CircBuffer.h"
-//#define ECHO_MODE 2
-#define APP_MODE 3
+#define ECHO_MODE 2
+//#define APP_MODE 3
 //#define TEST_MODE 1
 #ifdef TEST_MODE
 #include "testsuite.h"
@@ -69,7 +69,7 @@ int main(void)
     BOARD_InitDebugConsole();
 
     //PRINTF("Hello World\n");
-
+    Init_SysTick();
     Init_UART0(115200);
     Init_RGB_LEDs();
     Control_RGB_LEDs(0, 0, 0);
@@ -85,6 +85,7 @@ int main(void)
     while(1)
     {
     	Echo_charblock();
+
     }
     return 0;
 #endif

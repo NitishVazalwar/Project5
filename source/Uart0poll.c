@@ -175,15 +175,19 @@ void Send_String_Poll(uint8_t * str)
 
 void Echo_charblock(void)
 {
-#ifdef  USE_UART_INTERRUPTS 	(0)
+#ifdef  POLL
 	check_for_receive();
 	char ch=UART0_Receive_Poll();
 	check_for_transmit();
 	UART0_Transmit_Poll(ch);
+	Displaytime();
 #endif
-#ifdef USE_UART_INTERRUPTS 	(1)
-	uint8_t flag=EchoNB();
+
+#ifdef USE_UART_INTERRUPTS
+	Echo_INTR();
+
 #endif
+
 }
 
 void application()
@@ -283,6 +287,9 @@ uart0return SendCharacterNB(char c)
 		return TX_DONE;
 }
 
+
+
+
 uart0return ReadCharacterNB(char * c)
 {
 	CBufferReturn_t ret = CBRead(RXBuffer, c);
@@ -290,6 +297,12 @@ uart0return ReadCharacterNB(char * c)
 		return RX_FAIL;
 	else
 		return RX_DONE;
+}
+
+void Echo_INTR(void)
+{
+
+
 }
 
 
@@ -317,6 +330,7 @@ uart0return EchoNB(void)
 // UART0 IRQ Handler. Listing 8.12 on p. 235
 void UART0_IRQHandler(void)
 {
+#ifdef APP
 	uint8_t ch;
 
 	if (UART0->S1 & (UART_S1_OR_MASK |UART_S1_NF_MASK |
@@ -357,6 +371,17 @@ void UART0_IRQHandler(void)
 			UART0->C2 &= ~UART0_C2_TIE_MASK;
 		}
 	}
+#endif
+
+#ifdef ECHO
+	if (UART0->S1 & UART0_S1_RDRF_MASK)
+		{
+			// received a character
+			char ch = UART0->D;
+			send(ch);
+		}
+	Displaytime();
+#endif
 }
 
 

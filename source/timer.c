@@ -15,14 +15,14 @@
 #include <stdio.h>
 #include "timer.h"
 
-static uint16_t minutes=0;
-static uint8_t seconds=0;
-static uint8_t hours=0;
-static uint8_t tenths=0;
+ static uint16_t minutes=0;
+ static uint8_t seconds=0;
+ static uint8_t hours=0;
+ static uint8_t tenths=0;
 
 void Init_SysTick(void)
 {
-	SysTick->LOAD = (48000000L/10);
+	SysTick->LOAD = (48000000L/16);
 	NVIC_SetPriority(SysTick_IRQn, 3);
 	SysTick->VAL = 0;
 	SysTick->CTRL = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
@@ -33,6 +33,9 @@ void Init_SysTick(void)
 
 void SysTick_Handler(void)
 {
+	//SysTick->CTRL &=~ (SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk);
+	//printf("\nInside Handler");
+	seconds++;
 	if(seconds==10)
 	{
 		tenths++;
@@ -49,6 +52,7 @@ void SysTick_Handler(void)
 		hours++;
 		minutes=0;
 	}
+
 }
 
 void Displaytime()

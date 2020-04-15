@@ -10,7 +10,10 @@
 #define UART_OVERSAMPLE_RATE 16
 #define SYS_CLOCK 48e6
 #include "queue.h"
-#define USE_UART_INTERRUPTS 	(0) // 0 for polled UART communications, 1 for interrupt-driven
+#define POLL 2
+//#define USE_UART_INTERRUPTS 1 // 0 for polled UART communications, 1 for interrupt-driven
+#define ECHO 1
+//#define APP 1
 extern Q_T TxQ, RxQ;
 
 #define critical_start() _disable_irq()
@@ -38,4 +41,5 @@ uart0return EchoNB(void);
 void application();
 void applicationPoll();
 void test(void);
+void Echo_INTR(void);
 #endif /* UART0POLL_H_ */
