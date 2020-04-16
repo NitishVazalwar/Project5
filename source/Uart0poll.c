@@ -12,6 +12,7 @@
 #include "logger.h"
 CircBuffer_t * RXBuffer;
 CircBuffer_t * TXBuffer;
+static uint8_t z;
 //Q_T TxQ, RxQ;
 /*
 Function to transmit a character assuming transmitter is available.
@@ -224,6 +225,8 @@ void test(void)
 }
 void applicationPoll()
 {
+
+#ifdef POLL
 	int array[15];
 	int count[200]={0};
     for(int i=0;i<10;i++)
@@ -246,32 +249,50 @@ void applicationPoll()
 			}
 		}
 	}
-//  	for(int i = 0; i < 10; i++)
-//  	{
-//  		for(int j = i + 1; array[j] != '\0'; j++)
-//  		{
-//  			if(array[j] == array[i])
-//			{
-//  				for(int k = j; array[k] != '\0'; k++)
-//				{
-//					array[k] = array[k + 1];
-//				}
-// 			}
-//		}
-//	}
-
 	for(int j=0;j<10;j++)
 	{
 		printf("%c",array[j]);
 		int a=array[j];
 		printf("%d\n\r",count[a]);
 	}
-//
-//
-//
-//
-//
-//
+
+#endif
+
+#ifdef APP
+	int array[15];
+	int count[200]={0};
+	if (z==1)
+	{
+
+		    for(int i=0;i<15;i++)
+		    {
+		    	char * out;
+		    	array[i]=CBRead(RXBuffer,out );
+		    	count[*out]=count[*out]+1;
+
+		    }
+
+	for (int i = 0; i < 10; i++)                     //Loop for ascending ordering
+		{
+			for (int j = 0; j < 10; j++)             //Loop for comparing other values
+			{
+				if (array[j] > array[i])                //Comparing other array elements
+				{
+					int tmp = array[i];         //Using temporary variable for storing last value
+					array[i] = array[j];            //replacing value
+					array[j] = tmp;             //storing last value
+				}
+			}
+		}
+		for(int j=0;j<10;j++)
+		{
+			printf("%c",array[j]);
+			int a=array[j];
+			printf("%d\n\r",count[a]);
+		}
+	}
+#endif
+
 }
 
 uart0return SendCharacterNB(char c)
@@ -302,7 +323,7 @@ uart0return ReadCharacterNB(char * c)
 void Echo_INTR(void)
 {
 
-
+    //a do nothing function
 }
 
 
@@ -350,12 +371,15 @@ void UART0_IRQHandler(void)
 		{
 			//Q_Enqueue(&RxQ, ch);
 			CBAdd(RXBuffer, ch);
+			printf("\n\rCharacter added");
+
 		}
 		else
 		{
 			// error - queue full.
 			// discard character
 			printf("\nError");
+			z=1;
 		}
 	}
 	if ( (UART0->C2 & UART0_C2_TIE_MASK) && // transmitter interrupt enabled
@@ -365,7 +389,8 @@ void UART0_IRQHandler(void)
 		if (!CheckIfEmpty(TXBuffer))
 		{
 			UART0->D = CBRead(TXBuffer, &ch);
-		} else \
+			printf("\nCharacter in TXBuffer");
+		} else
 		{
 			// queue is empty so disable transmitter interrupt
 			UART0->C2 &= ~UART0_C2_TIE_MASK;
